@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Update System - Three Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .option-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .option-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .comparison {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+        
+        .comparison h2 {
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-yellow {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .badge-blue {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 SSE Update System</h1>
+            <p class="subtitle">Three Implementation Options for Real-Time Notifications</p>
+        </header>
+
+        <div class="options">
+            <div class="option-card">
+                <div class="option-number">1</div>
+                <h2>Version.txt Polling</h2>
+                <p class="description">
+                    Simple file-based approach that polls a version.txt file every 0.5 seconds
+                    and broadcasts updates via SSE.
+                </p>
+                <ul class="features">
+                    <li>No dependencies required</li>
+                    <li>Simple and reliable</li>
+                    <li>Easy to implement</li>
+                    <li>Works everywhere</li>
+                </ul>
+                <a href="http://option1.sse.test" class="btn" target="_blank">Try Option 1 →</a>
+            </div>
+
+            <div class="option-card">
+                <div class="option-number">2</div>
+                <h2>Instant APCu Reloader</h2>
+                <p class="description">
+                    Uses in-memory APCu cache for instant updates. Deployment script triggers
+                    the update directly with zero polling delay.
+                </p>
+                <ul class="features">
+                    <li>Instant updates</li>
+                    <li>Very fast (in-memory)</li>
+                    <li>Low CPU usage</li>
+                    <li>Clean architecture</li>
+                </ul>
+                <a href="http://option2.sse.test" class="btn" target="_blank">Try Option 2 →</a>
+            </div>
+
+            <div class="option-card">
+                <div class="option-number">3</div>
+                <h2>File Watcher Reloader</h2>
+                <p class="description">
+                    Maintains an in-memory snapshot of all files and automatically detects
+                    changes across multiple directories.
+                </p>
+                <ul class="features">
+                    <li>Auto-detection</li>
+                    <li>Shows what changed</li>
+                    <li>Multi-directory support</li>
+                    <li>Detailed statistics</li>
+                </ul>
+                <a href="http://option3.sse.test" class="btn" target="_blank">Try Option 3 →</a>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <h2>📊 Feature Comparison</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Option 1</th>
+                        <th>Option 2</th>
+                        <th>Option 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Update Speed</strong></td>
+                        <td><span class="badge badge-yellow">~0.5s</span></td>
+                        <td><span class="badge badge-green">Instant</span></td>
+                        <td><span class="badge badge-yellow">~1s</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CPU Usage</strong></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-green">Very Low</span></td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Setup Complexity</strong></td>
+                        <td><span class="badge badge-green">Easy</span></td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dependencies</strong></td>
+                        <td><span class="badge badge-green">None</span></td>
+                        <td><span class="badge badge-yellow">APCu</span></td>
+                        <td><span class="badge badge-green">None</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auto-detection</strong></td>
+                        <td><span class="badge badge-yellow">No</span></td>
+                        <td><span class="badge badge-yellow">No</span></td>
+                        <td><span class="badge badge-green">Yes</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Best For</strong></td>
+                        <td>Simple deployments</td>
+                        <td>High-performance apps</td>
+                        <td>Development/testing</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>📚 Read the <a href="README.md" style="color: white; text-decoration: underline;">full documentation</a> for detailed implementation guides</p>
+        </footer>
+    </div>
+</body>
+</html>

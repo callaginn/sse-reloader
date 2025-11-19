@@ -1,0 +1,20 @@
+{
+  "name": "sse-reloader",
+  "version": "1.0.0",
+  "description": "SSE-based auto-reload implementation options",
+  "scripts": {
+    "watch1": "php option1/watcher.php",
+    "watch2": "php option2/watcher.php",
+    "watch3": "php option3/watcher.php",
+    "trigger2": "php option2/public/trigger.php",
+    "watch4": "echo 'Option 4 is a real-time messenger - just open http://option4.sse.test in multiple tabs!'"
+  },
+  "keywords": [
+    "sse",
+    "server-sent-events",
+    "auto-reload",
+    "php"
+  ],
+  "author": "",
+  "license": "ISC"
+}

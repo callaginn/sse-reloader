@@ -1,0 +1,16 @@
+RewriteEngine On
+
+# Redirect to index.php for routing
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Allow access to index.php
+<Files "index.php">
+    Require all granted
+</Files>
+
+# Allow access to index.html
+<Files "index.html">
+    Require all granted
+</Files>

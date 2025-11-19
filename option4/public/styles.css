@@ -1,0 +1,240 @@
+/* iPhone 16 Plus dimensions: 430 x 932 */
+:root {
+    --iphone-width: 430px;
+    --iphone-height: 932px;
+}
+
+/* Override Bootstrap body */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+}
+
+/* Override Bootstrap container */
+.container {
+    max-width: var(--iphone-width) !important;
+    width: var(--iphone-width) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Override Bootstrap card */
+.card {
+    border-radius: 50px !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    border: 8px solid #1f2937 !important;
+    background: black !important;
+    height: var(--iphone-height) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Status Bar (like iPhone) */
+.card-header {
+    background: #1f2937 !important;
+    padding: 8px 20px !important;
+    border: none !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 0.75rem !important;
+    color: white !important;
+    flex-shrink: 0 !important;
+}
+
+.status-bar-left {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-weight: 600;
+}
+
+.status-bar-right {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.status-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+}
+
+.status-icon.connected {
+    background: #4ade80;
+}
+
+.status-icon.warning {
+    background: #fbbf24;
+}
+
+.status-icon.error {
+    background: #ef4444;
+}
+
+/* Messenger Header */
+.bg-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    padding: 16px 20px 12px 20px !important;
+    border: none !important;
+    flex-shrink: 0 !important;
+}
+
+.h4 {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin: 0 0 8px 0 !important;
+}
+
+/* Active Users List */
+.active-users {
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.active-users::-webkit-scrollbar {
+    display: none;
+}
+
+/* Override Bootstrap badge */
+.badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 6px 14px !important;
+    border-radius: 20px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.badge:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.05);
+}
+
+/* Override Bootstrap card-body */
+.card-body {
+    padding: 20px !important;
+    padding-bottom: 0px !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    background: white;
+}
+
+.card-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+/* Message Bubbles - Override alert classes */
+.alert {
+    max-width: 70% !important;
+    padding: 12px 16px !important;
+    border-radius: 18px !important;
+    word-wrap: break-word;
+    position: relative;
+    border: none !important;
+    margin-bottom: 0 !important;
+}
+
+.alert-primary {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    border-bottom-right-radius: 0px !important;
+}
+
+.alert-secondary {
+    align-self: flex-start;
+    border-bottom-left-radius: 0px !important;
+    border: none !important;
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+/* Input Section - Override form-control and btn */
+.card-footer {
+    background: white !important;
+    padding: 16px 20px !important;
+    border-top: none !important;
+    flex-shrink: 0 !important;
+}
+
+.form-control {
+    flex: 1 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 24px !important;
+    padding: 12px 20px !important;
+    font-size: 0.95rem !important;
+    resize: none !important;
+    transition: all 0.3s ease !important;
+    max-height: 120px !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 48px !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: scale(1.1) !important;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+/* Input container */
+.d-flex.gap-2 {
+    align-items: flex-end !important;
+}
