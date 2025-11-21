@@ -1,0 +1,59 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true,
+		"node": true,
+		"jquery": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:json/recommended"
+	],
+	"plugins": [
+		"json"
+	],
+	"overrides": [
+		
+	],
+	"globals": {
+		"bootstrap": "readonly",
+		"captcha": "readonly",
+		"contact": "readonly",
+		"IMask": "readonly",
+		"___browserSync___": "readonly"
+	},
+	"ignorePatterns": ["**/build/*", "**/vendor/*"],
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"sourceType": "module"
+	},
+	"rules": {
+		"brace-style": [
+			"error",
+			"1tbs", { "allowSingleLine": true }
+		],
+		"arrow-parens": [
+			"error",
+			"as-needed"
+		],
+		"indent": [
+			"error",
+			"tab"
+		],
+		"linebreak-style": [
+			"error",
+			"unix"
+		],
+		"semi": 0,
+		"semi-spacing": "warn",
+		"space-before-blocks": "warn",
+		"no-unused-vars": [
+			"error",
+			{ "args": "none" }
+		],
+		"block-spacing": "warn",
+		"json/*": ["warn"],
+		"json/duplicate-key": "warn",
+		"json/trailing-comma": "warn"
+	}
+}
