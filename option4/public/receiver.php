@@ -12,9 +12,9 @@
     $isPresence = isset($_REQUEST["presence"]) && $_REQUEST["presence"] === 'true';
     $isNameChange = isset($_REQUEST["nameChange"]) && $_REQUEST["nameChange"] === 'true';
     $oldName = $_REQUEST["oldName"] ?? null;
-    $lockFile = __DIR__ . '/messages.lock';
-    $historyFile = __DIR__ . '/messages.json';
-    $refreshFile = __DIR__ . '/refresh.trigger';
+    $lockFile = __DIR__ . '/data/messages.lock';
+    $historyFile = __DIR__ . '/data/messages.json';
+    $refreshFile = __DIR__ . '/data/refresh.trigger';
 
     // Handle name changes
     if ($isNameChange && $oldName) {

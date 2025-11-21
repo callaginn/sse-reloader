@@ -45,7 +45,7 @@ brew services restart httpd
 ls -la /Users/stephen/Sites/dashboard-sse2/option1/version.txt
 ls -la /Users/stephen/Sites/dashboard-sse2/option2/public/
 ls -la /Users/stephen/Sites/dashboard-sse2/option3/content/
-ls -la /Users/stephen/Sites/dashboard-sse2/option4/public/messages.json
+ls -la /Users/stephen/Sites/dashboard-sse2/option4/public/data/messages.json
 ```
 
 **Test SSE server directly:**

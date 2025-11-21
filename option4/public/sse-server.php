@@ -9,14 +9,25 @@ header('Cache-Control: no-cache');
 header('Connection: keep-alive');
 header('X-Accel-Buffering: no'); // Disable nginx buffering
 
+function flushOutput() {
+    // Padding to push through Nginx/Apache gzip buffers and PHP output buffering
+    echo str_repeat(" ", 4096) . "\n";
+    
+    // Only flush if there's actually a buffer
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
+    flush();
+}
+
 // Close session to prevent blocking
 session_write_close();
 
 // Ensure output is sent immediately
 if (ob_get_level()) ob_end_clean();
 
-$historyFile = __DIR__ . '/messages.json';
-$refreshFile = __DIR__ . '/refresh.trigger';
+$historyFile = __DIR__ . '/data/messages.json';
+$refreshFile = __DIR__ . '/data/refresh.trigger';
 
 // Get client's tab ID from query string
 $clientTabId = $_GET['tabId'] ?? null;
@@ -29,7 +40,7 @@ $lastRefreshTime = 0;
 if (file_exists($historyFile)) {
     $history = json_decode(file_get_contents($historyFile), true) ?: [];
     echo "data: " . json_encode(['type' => 'history', 'messages' => $history]) . "\n\n";
-    flush();
+    flushOutput();
     
     // Set last message ID to the most recent in history
     if (!empty($history)) {
@@ -39,7 +50,7 @@ if (file_exists($historyFile)) {
 
 // Send initial connection message
 echo "data: " . json_encode(['type' => 'connected', 'message' => 'Connection established']) . "\n\n";
-flush();
+flushOutput();
 
 while (true) {
     // Check if client is still connected
@@ -62,8 +73,19 @@ while (true) {
                 // If no excludeTabId is set, refresh all clients
                 // If excludeTabId is set, only refresh if this client is not the excluded one
                 if ($excludeTabId === null || $clientTabId !== $excludeTabId) {
-                    echo "data: " . json_encode(['type' => 'refresh', 'message' => 'User list updated']) . "\n\n";
-                    flush();
+                    // Load current message history for refresh
+                    $currentHistory = [];
+                    if (file_exists($historyFile)) {
+                        clearstatcache(true, $historyFile);
+                        $currentHistory = json_decode(file_get_contents($historyFile), true) ?: [];
+                    }
+                    echo "data: " . json_encode(['type' => 'refresh', 'messages' => $currentHistory]) . "\n\n";
+                    flushOutput();
+                    
+                    // Update lastMessageId to prevent re-sending messages as "new"
+                    if (!empty($currentHistory)) {
+                        $lastMessageId = end($currentHistory)['id'];
+                    }
                 }
                 // Always update lastRefreshTime to avoid repeated triggers
                 $lastRefreshTime = $refreshTime;
@@ -91,7 +113,7 @@ while (true) {
         // Send any new messages
         foreach ($newMessages as $message) {
             echo "data: " . json_encode(['type' => 'newMessage', 'message' => $message]) . "\n\n";
-            flush();
+            flushOutput();
             $lastMessageId = $message['id'];
         }
     }
@@ -100,7 +122,7 @@ while (true) {
     static $lastKeepalive = 0;
     if (time() - $lastKeepalive > 15) {
         echo ": keepalive\n\n";
-        flush();
+        flushOutput();
         $lastKeepalive = time();
     }
     

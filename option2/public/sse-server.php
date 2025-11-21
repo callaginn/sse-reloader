@@ -1,4 +1,16 @@
 <?php
+
+function flushOutput() {
+    // Padding to push through Nginx/Apache gzip buffers and PHP output buffering
+    echo str_repeat(" ", 4096) . "\n";
+    
+    // Only flush if there's actually a buffer
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
+    flush();
+}
+
 // Fix 1: Prevent script from timing out
 set_time_limit(0);
 
@@ -14,13 +26,6 @@ header('X-Accel-Buffering: no');
 // Disable output buffering
 ini_set('output_buffering', 'off');
 ini_set('zlib.output_compression', false);
-
-// Stephen's Custom APCu settings (uncomment if needed)
-// ini_set('apcu.enabled', '1');
-// ini_set('apc.enable_cli', '1');
-// ini_set('apc.ttl', '0');
-// ini_set('apc.serializers', 'php');
-// ini_set('apc.serializer', 'php');
 
 if (function_exists('apache_setenv')) {
     apache_setenv('no-gzip', '1');
@@ -45,8 +50,7 @@ $currentVersion = apcu_fetch('app_version');
 // Send initial connection message
 echo "event: connected\n";
 echo "data: " . json_encode(['message' => 'SSE connection established', 'apcu_enabled' => true]) . "\n\n";
-echo ":\n\n";
-flush();
+flushOutput();
 
 // Send initial version immediately
 echo "event: version\n";
@@ -55,9 +59,7 @@ echo "data: " . json_encode([
     'timestamp' => time(),
     'trigger' => 'initial'
 ]) . "\n\n";
-echo ":\n\n";
-flush();
-
+flushOutput();
 $lastVersion = $currentVersion;
 
 // Main monitoring loop
@@ -85,8 +87,7 @@ while (true) {
             'timestamp' => time(),
             'trigger' => $trigger
         ]) . "\n\n";
-        echo ":\n\n";
-        flush();
+        flushOutput();
         
         $lastVersion = $currentVersion;
     }
@@ -100,8 +101,7 @@ while (true) {
             'version' => $currentVersion,
             'lastVersion' => $lastVersion
         ]) . "\n\n";
-        echo ":\n\n";
-        flush();
+        flushOutput();
         $heartbeatCounter = 0;
     }
     

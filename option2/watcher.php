@@ -1,6 +1,6 @@
 <?php
 
-$triggerUrl = 'http://option2.sse.test/trigger.php';
+$triggerUrl = 'http://option2.ddev.site/trigger.php';
 
 echo "APCu-based Auto Updater (via HTTP)\n";
 echo "===================================\n";

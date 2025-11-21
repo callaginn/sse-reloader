@@ -35,11 +35,22 @@ foreach ($watchDirs as $dir) {
     }
 }
 
+function flushOutput() {
+    // Padding to push through Nginx/Apache gzip buffers and PHP output buffering
+    echo str_repeat(" ", 4096) . "\n";
+    
+    // Only flush if there's actually a buffer
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
+    flush();
+}
+
 // Function to send SSE event
 function sendSSE($event, $data) {
     echo "event: {$event}\n";
     echo "data: " . json_encode($data) . "\n\n";
-    flush();
+    flushOutput();
 }
 
 // Function to scan directory and get file snapshots

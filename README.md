@@ -38,7 +38,8 @@ dashboard-sse2/
 │       ├── index.php
 │       ├── sse-server.php
 │       ├── receiver.php
-│       └── messages.json
+│       └── data/
+│           └── messages.json
 ├── HOMEBREW_SETUP.md     # Setup instructions
 └── TESTING.md            # Testing guide
 ```
