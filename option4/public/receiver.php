@@ -15,6 +15,7 @@
     $lockFile = __DIR__ . '/data/messages.lock';
     $historyFile = __DIR__ . '/data/messages.json';
     $refreshFile = __DIR__ . '/data/refresh.trigger';
+    $newMessageFile = __DIR__ . '/data/newmessage.trigger';
 
     // Handle name changes
     if ($isNameChange && $oldName) {
@@ -87,6 +88,14 @@
         }
         
         file_put_contents($historyFile, json_encode($history, JSON_PRETTY_PRINT));
+        
+        // Trigger newMessage event for all clients
+        $newMessageData = [
+            'time' => microtime(true),
+            'messageId' => $messageObj['id'],
+            'excludeTabId' => $tabId // Don't notify the sender via SSE (they already have it)
+        ];
+        file_put_contents($newMessageFile, json_encode($newMessageData));
         
         flock($fp, LOCK_UN);
         fclose($fp);
