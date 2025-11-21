@@ -5,16 +5,14 @@
 		private array $input;
 		private string $lockFile;
 		private string $historyFile;
-		private string $refreshFile;
-		private string $newMessageFile;
+		private string $eventFile;
 
 		public function __construct(array $input, ?string $dataDir = null) {
 			$this->input = $input;
 			$dataDir = $dataDir ?? __DIR__ . '/data';
 			$this->lockFile = $dataDir . '/messages.lock';
 			$this->historyFile = $dataDir . '/messages.json';
-			$this->refreshFile = $dataDir . '/refresh.trigger';
-			$this->newMessageFile = $dataDir . '/newmessage.trigger';
+			$this->eventFile = $dataDir . '/events.triggers';
 		}
 
 		public function handle(): void {
@@ -60,7 +58,7 @@
 				}
 			});
 
-			$this->writeRefreshTrigger();
+			$this->emitEvent('refresh');
 			$this->respond(200, ['success' => true, 'type' => 'nameChange', 'refresh' => true]);
 			return true;
 		}
@@ -71,7 +69,7 @@
 				return false;
 			}
 
-			$this->writeRefreshTrigger();
+			$this->emitEvent('refresh');
 			$this->respond(200, [
 				'success' => true,
 				'type' => 'presence',
@@ -90,8 +88,12 @@
 					$history = array_slice($history, -self::MESSAGE_LIMIT);
 				}
 				$this->saveHistory($history);
-				$this->writeNewMessageTrigger($message['id']);
 			});
+
+			$this->emitEvent('newMessage', [
+				'messageId' => $message['id'],
+				'excludeTabId' => $message['tabId']
+			]);
 
 			$this->respond(200, ['success' => true, 'message' => $message]);
 		}
@@ -126,18 +128,25 @@
 			file_put_contents($this->historyFile, json_encode($history, JSON_PRETTY_PRINT));
 		}
 
-		private function writeRefreshTrigger(): void {
-			$data = ['time' => microtime(true)];
-			file_put_contents($this->refreshFile, json_encode($data));
-		}
+		private function emitEvent(string $type, array $payload = []): void {
+			$events = [];
+			if (is_file($this->eventFile)) {
+				$content = file_get_contents($this->eventFile);
+				$decoded = json_decode($content, true);
+				if (is_array($decoded)) {
+					$events = $decoded;
+				}
+			}
 
-		private function writeNewMessageTrigger(string $messageId): void {
-			$data = [
-				'time' => microtime(true),
-				'messageId' => $messageId,
-				'excludeTabId' => $this->tabId()
-			];
-			file_put_contents($this->newMessageFile, json_encode($data));
+			$events[$type] = array_merge([
+				'time' => microtime(true)
+			], $payload);
+
+			file_put_contents(
+				$this->eventFile,
+				json_encode($events, JSON_PRETTY_PRINT),
+				LOCK_EX
+			);
 		}
 
 		private function withLock(callable $callback) {

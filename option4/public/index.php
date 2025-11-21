@@ -9,11 +9,6 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         
         <script src="assets/app.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                window.app = new ChatApp();
-            });
-        </script>
     </head>
     
     <body>

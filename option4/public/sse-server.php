@@ -2,14 +2,12 @@
 	// SSEMessenger - Server-Sent Events Message Broadcasting System
 	class SSEMessenger {
 		private string $historyFile;
-		private string $refreshFile;
-		private string $newMessageFile;
+		private string $eventFile;
 		private string $dataDir;
 		
 		private ?string $clientTabId;
 		private ?string $lastMessageId = null;
-		private float $lastRefreshTime = 0;
-		private float $lastNewMessageTime = 0;
+		private array $eventTimes = [];
 		private float $lastKeepalive = 0;
 		
 		private int $pollInterval;
@@ -36,8 +34,11 @@
 			$this->bufferPadding = (int) $config['bufferPadding'];
 			
 			$this->historyFile = $this->dataDir . '/messages.json';
-			$this->refreshFile = $this->dataDir . '/refresh.trigger';
-			$this->newMessageFile = $this->dataDir . '/newmessage.trigger';
+			$this->eventFile = $this->dataDir . '/events.triggers';
+			$this->eventTimes = [
+				'refresh' => 0,
+				'newMessage' => 0,
+			];
 			
 			$this->setupEnvironment();
 		}
@@ -153,65 +154,81 @@
 			$this->sendEvent(['type' => 'newMessage', 'message' => $message]);
 		}
 		
-		// Check and handle refresh triggers
-		private function checkRefreshTrigger(): bool {
-			return $this->processTrigger($this->refreshFile, $this->lastRefreshTime, function (): bool {
-				$history = $this->loadHistory();
-				$this->sendHistoryEvent($history, 'refresh');
-				
-				if (!empty($history)) {
-					$lastMessage = end($history);
-					$this->lastMessageId = $lastMessage['id'];
+		// Check combined event trigger file for refresh or message updates
+		private function checkEventTriggers(): bool {
+			if (!is_file($this->eventFile)) {
+				return false;
+			}
+			
+			$events = $this->readJson($this->eventFile);
+			if (!$events) {
+				return false;
+			}
+			
+			$handled = false;
+			foreach (['refresh', 'newMessage'] as $type) {
+				if (!isset($events[$type]['time'])) {
+					continue;
 				}
 				
+				$event = $events[$type];
+				$time = (float) $event['time'];
+				if ($time <= ($this->eventTimes[$type] ?? 0)) {
+					continue;
+				}
+				
+				$this->eventTimes[$type] = $time;
+				$excluded = ($event['excludeTabId'] ?? null) === $this->clientTabId;
+				if ($excluded) {
+					if ($type === 'newMessage' && isset($event['messageId'])) {
+						$this->lastMessageId = $event['messageId'];
+					}
+					$handled = true;
+					continue;
+				}
+				
+				if ($type === 'refresh') {
+					$handled = $this->handleRefreshEvent() || $handled;
+				} elseif ($type === 'newMessage') {
+					$handled = $this->handleNewMessageEvent($event) || $handled;
+				}
+			}
+			
+			return $handled;
+		}
+
+		private function handleRefreshEvent(): bool {
+			$history = $this->loadHistory();
+			$this->sendHistoryEvent($history, 'refresh');
+			
+			if (!empty($history)) {
+				$lastMessage = end($history);
+				$this->lastMessageId = $lastMessage['id'];
+			}
+			
+			return true;
+		}
+
+		private function handleNewMessageEvent(array $event): bool {
+			$messageId = $event['messageId'] ?? null;
+			if (!$messageId) {
+				return false;
+			}
+			
+			if ($this->lastMessageId === $messageId) {
 				return true;
-			});
+			}
+			
+			$message = $this->getMessageById($messageId);
+			if (!$message) {
+				return $this->handleRefreshEvent();
+			}
+			
+			$this->sendNewMessageEvent($message);
+			$this->lastMessageId = $message['id'];
+			return true;
 		}
-		
-		// Check and handle new message triggers
-		private function checkNewMessageTrigger(): bool {
-			return $this->processTrigger($this->newMessageFile, $this->lastNewMessageTime, function (array $data): bool {
-				$messageId = $data['messageId'] ?? null;
-				if (!$messageId) {
-					return false;
-				}
-				
-				$message = $this->getMessageById($messageId);
-				if (!$message) {
-					return false;
-				}
-				
-				$this->sendNewMessageEvent($message);
-				$this->lastMessageId = $message['id'];
-				return true;
-			});
-		}
-		
-		// Generic trigger processor with memoized timestamps
-		private function processTrigger(string $file, float &$lastProcessedTime, callable $handler, string $excludeKey = 'excludeTabId'): bool {
-			if (!is_file($file)) {
-				return false;
-			}
-			
-			$data = $this->readJson($file);
-			if (!$data || !isset($data['time'])) {
-				return false;
-			}
-			
-			$triggerTime = (float) $data['time'];
-			if ($triggerTime <= $lastProcessedTime) {
-				return false;
-			}
-			
-			$lastProcessedTime = $triggerTime;
-			$excludeTabId = $data[$excludeKey] ?? null;
-			if ($excludeTabId !== null && $this->clientTabId === $excludeTabId) {
-				return false;
-			}
-			
-			return (bool) $handler($data);
-		}
-		
+
 		// Retrieve a single message via cached lookup
 		private function getMessageById(string $messageId): ?array {
 			$this->loadHistory();
@@ -247,8 +264,7 @@
 		// Main event loop - monitors for changes and sends updates
 		public function startEventLoop(): void {
 			while (!connection_aborted()) {
-				$handled = $this->checkRefreshTrigger();
-				$handled = $this->checkNewMessageTrigger() || $handled;
+				$handled = $this->checkEventTriggers();
 				
 				if (!$handled) {
 					$this->checkHistoryForNewMessages();
