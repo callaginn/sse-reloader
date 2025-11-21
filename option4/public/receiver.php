@@ -1,109 +1,169 @@
-<?php 
-    // Validate input
-    if (!isset($_REQUEST["d"]) || empty($_REQUEST["d"])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'No data provided']);
-        exit;
-    }
+<?php
+	class MessageReceiver {
+		private const MESSAGE_LIMIT = 100;
 
-    $message = $_REQUEST["d"];
-    $tabId = $_REQUEST["tabId"] ?? 'unknown';
-    $senderName = $_REQUEST["senderName"] ?? 'Anonymous';
-    $isPresence = isset($_REQUEST["presence"]) && $_REQUEST["presence"] === 'true';
-    $isNameChange = isset($_REQUEST["nameChange"]) && $_REQUEST["nameChange"] === 'true';
-    $oldName = $_REQUEST["oldName"] ?? null;
-    $lockFile = __DIR__ . '/data/messages.lock';
-    $historyFile = __DIR__ . '/data/messages.json';
-    $refreshFile = __DIR__ . '/data/refresh.trigger';
-    $newMessageFile = __DIR__ . '/data/newmessage.trigger';
+		private array $input;
+		private string $lockFile;
+		private string $historyFile;
+		private string $refreshFile;
+		private string $newMessageFile;
 
-    // Handle name changes
-    if ($isNameChange && $oldName) {
-        $fp = fopen($lockFile, 'c');
-        if (flock($fp, LOCK_EX)) {
-            // Update all messages from old name to new name
-            if (file_exists($historyFile)) {
-                $historyContent = file_get_contents($historyFile);
-                $history = json_decode($historyContent, true) ?: [];
-                
-                $updated = false;
-                foreach ($history as &$msg) {
-                    if ($msg['senderName'] === $oldName) {
-                        $msg['senderName'] = $senderName;
-                        $updated = true;
-                    }
-                }
-                
-                if ($updated) {
-                    file_put_contents($historyFile, json_encode($history, JSON_PRETTY_PRINT));
-                }
-            }
-            
-            // Trigger refresh for all clients (including the one making the change)
-            $refreshData = ['time' => microtime(true)];
-            file_put_contents($refreshFile, json_encode($refreshData));
-            
-            flock($fp, LOCK_UN);
-            fclose($fp);
-            
-            echo json_encode(['success' => true, 'type' => 'nameChange', 'refresh' => true]);
-            exit;
-        }
-        fclose($fp);
-    }
+		public function __construct(array $input, ?string $dataDir = null) {
+			$this->input = $input;
+			$dataDir = $dataDir ?? __DIR__ . '/data';
+			$this->lockFile = $dataDir . '/messages.lock';
+			$this->historyFile = $dataDir . '/messages.json';
+			$this->refreshFile = $dataDir . '/refresh.trigger';
+			$this->newMessageFile = $dataDir . '/newmessage.trigger';
+		}
 
-    // If this is just a presence notification, trigger refresh
-    if ($isPresence || $message === '__USER_JOINED__') {
-        // Trigger refresh for all clients (including the one joining)
-        $refreshData = ['time' => microtime(true)];
-        file_put_contents($refreshFile, json_encode($refreshData));
-        echo json_encode(['success' => true, 'type' => 'presence', 'senderName' => $senderName, 'refresh' => true]);
-        exit;
-    }
+		public function handle(): void {
+			if (empty($this->input['d'])) {
+				$this->respond(400, ['error' => 'No data provided']);
+			}
 
-    // Create message object
-    $messageObj = [
-        'id' => uniqid('msg_', true),
-        'content' => $message,
-        'timestamp' => time(),
-        'tabId' => $tabId,
-        'senderName' => $senderName
-    ];
+			if ($this->handleNameChange()) {
+				return;
+			}
 
-    // Use file locking to prevent race conditions
-    $fp = fopen($lockFile, 'c');
-    if (flock($fp, LOCK_EX)) {
-        // Add to message history
-        $history = [];
-        if (file_exists($historyFile)) {
-            $historyContent = file_get_contents($historyFile);
-            $history = json_decode($historyContent, true) ?: [];
-        }
-        
-        $history[] = $messageObj;
-        
-        // Keep only last 100 messages
-        if (count($history) > 100) {
-            $history = array_slice($history, -100);
-        }
-        
-        file_put_contents($historyFile, json_encode($history, JSON_PRETTY_PRINT));
-        
-        // Trigger newMessage event for all clients
-        $newMessageData = [
-            'time' => microtime(true),
-            'messageId' => $messageObj['id'],
-            'excludeTabId' => $tabId // Don't notify the sender via SSE (they already have it)
-        ];
-        file_put_contents($newMessageFile, json_encode($newMessageData));
-        
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        
-        echo json_encode(['success' => true, 'message' => $messageObj]);
-    } else {
-        fclose($fp);
-        http_response_code(500);
-        echo json_encode(['error' => 'Could not acquire lock']);
-    }
+			if ($this->handlePresence()) {
+				return;
+			}
+
+			$this->handleMessage();
+		}
+
+		private function handleNameChange(): bool {
+			// Detects when the client is attempting to rename themselves.
+			if (($this->input['nameChange'] ?? 'false') !== 'true') {
+				return false;
+			}
+
+			$oldName = trim((string)($this->input['oldName'] ?? ''));
+			if ($oldName === '') {
+				$this->respond(400, ['error' => 'Old name required']);
+			}
+
+			$this->withLock(function () use ($oldName): void {
+				$history = $this->loadHistory();
+				$updated = false;
+				foreach ($history as &$msg) {
+					if (($msg['senderName'] ?? null) === $oldName) {
+						$msg['senderName'] = $this->senderName();
+						$updated = true;
+					}
+				}
+				unset($msg);
+
+				if ($updated) {
+					$this->saveHistory($history);
+				}
+			});
+
+			$this->writeRefreshTrigger();
+			$this->respond(200, ['success' => true, 'type' => 'nameChange', 'refresh' => true]);
+			return true;
+		}
+
+		private function handlePresence(): bool {
+			// Detects presence pings or synthetic join messages from clients.
+			if (($this->input['presence'] ?? 'false') !== 'true' && ($this->input['d'] ?? '') !== '__USER_JOINED__') {
+				return false;
+			}
+
+			$this->writeRefreshTrigger();
+			$this->respond(200, [
+				'success' => true,
+				'type' => 'presence',
+				'senderName' => $this->senderName(),
+				'refresh' => true
+			]);
+			return true;
+		}
+
+		private function handleMessage(): void {
+			$message = $this->createMessage();
+			$this->withLock(function () use ($message): void {
+				$history = $this->loadHistory();
+				$history[] = $message;
+				if (count($history) > self::MESSAGE_LIMIT) {
+					$history = array_slice($history, -self::MESSAGE_LIMIT);
+				}
+				$this->saveHistory($history);
+				$this->writeNewMessageTrigger($message['id']);
+			});
+
+			$this->respond(200, ['success' => true, 'message' => $message]);
+		}
+
+		private function createMessage(): array {
+			return [
+				'id' => uniqid('msg_', true),
+				'content' => (string)$this->input['d'],
+				'timestamp' => time(),
+				'tabId' => $this->tabId(),
+				'senderName' => $this->senderName()
+			];
+		}
+
+		private function senderName(): string {
+			return $this->input['senderName'] ?? 'Anonymous';
+		}
+
+		private function tabId(): string {
+			return $this->input['tabId'] ?? 'unknown';
+		}
+
+		private function loadHistory(): array {
+			if (!is_file($this->historyFile)) {
+				return [];
+			}
+			$content = file_get_contents($this->historyFile);
+			return json_decode($content, true) ?: [];
+		}
+
+		private function saveHistory(array $history): void {
+			file_put_contents($this->historyFile, json_encode($history, JSON_PRETTY_PRINT));
+		}
+
+		private function writeRefreshTrigger(): void {
+			$data = ['time' => microtime(true)];
+			file_put_contents($this->refreshFile, json_encode($data));
+		}
+
+		private function writeNewMessageTrigger(string $messageId): void {
+			$data = [
+				'time' => microtime(true),
+				'messageId' => $messageId,
+				'excludeTabId' => $this->tabId()
+			];
+			file_put_contents($this->newMessageFile, json_encode($data));
+		}
+
+		private function withLock(callable $callback) {
+			$fp = fopen($this->lockFile, 'c+');
+			if (!$fp) {
+				$this->respond(500, ['error' => 'Cannot open lock']);
+			}
+			if (!flock($fp, LOCK_EX)) {
+				fclose($fp);
+				$this->respond(500, ['error' => 'Could not acquire lock']);
+			}
+
+			try {
+				return $callback($fp);
+			} finally {
+				flock($fp, LOCK_UN);
+				fclose($fp);
+			}
+		}
+
+		private function respond(int $status, array $payload): void {
+			http_response_code($status);
+			header('Content-Type: application/json');
+			echo json_encode($payload);
+			exit;
+		}
+	}
+	(new MessageReceiver($_REQUEST))->handle();
 ?>
