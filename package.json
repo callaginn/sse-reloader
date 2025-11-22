@@ -6,8 +6,7 @@
     "watch1": "php option1/watcher.php",
     "watch2": "php option2/watcher.php",
     "watch3": "php option3/watcher.php",
-    "trigger2": "php option2/public/trigger.php",
-    "watch4": "echo 'Option 4 is a real-time messenger - just open http://option4.sse.test in multiple tabs!'"
+    "trigger2": "php option2/public/trigger.php"
   },
   "keywords": [
     "sse",
