@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSE Update System - Three Options</title>
+    <title>SSE Update System - Four Options</title>
     <style>
         * {
             margin: 0;
@@ -185,7 +185,7 @@
     <div class="container">
         <header>
             <h1>🚀 SSE Update System</h1>
-            <p class="subtitle">Three Implementation Options for Real-Time Notifications</p>
+            <p class="subtitle">Four Implementation Options for Real-Time Notifications</p>
         </header>
 
         <div class="options">
@@ -236,6 +236,21 @@
                 </ul>
                 <a href="http://option3.ddev.site" class="btn" target="_blank">Try Option 3 →</a>
             </div>
+
+            <div class="option-card">
+                <div class="option-number">4</div>
+                <h2>Git-Based Trigger</h2>
+                <p class="description">
+                    Monitors Git commit hash and triggers updates on any git operation (commit, pull, merge, checkout). Perfect for deployment pipelines.
+                </p>
+                <ul class="features">
+                    <li>Triggers on code changes</li>
+                    <li>Git workflow integration</li>
+                    <li>No extra files needed</li>
+                    <li>Deployment-friendly</li>
+                </ul>
+                <a href="http://option4.ddev.site" class="btn" target="_blank">Try Option 4 →</a>
+            </div>
         </div>
 
         <div class="comparison">
@@ -247,6 +262,7 @@
                         <th>Option 1</th>
                         <th>Option 2</th>
                         <th>Option 3</th>
+                        <th>Option 4</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -255,29 +271,34 @@
                         <td><span class="badge badge-yellow">~0.5s</span></td>
                         <td><span class="badge badge-green">Instant</span></td>
                         <td><span class="badge badge-yellow">~1s</span></td>
+                        <td><span class="badge badge-yellow">~0.5s</span></td>
                     </tr>
                     <tr>
                         <td><strong>CPU Usage</strong></td>
                         <td><span class="badge badge-green">Low</span></td>
                         <td><span class="badge badge-green">Very Low</span></td>
                         <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
                     </tr>
                     <tr>
                         <td><strong>Setup Complexity</strong></td>
                         <td><span class="badge badge-green">Easy</span></td>
                         <td><span class="badge badge-yellow">Medium</span></td>
                         <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-green">Easy</span></td>
                     </tr>
                     <tr>
                         <td><strong>Dependencies</strong></td>
                         <td><span class="badge badge-green">None</span></td>
                         <td><span class="badge badge-yellow">APCu</span></td>
                         <td><span class="badge badge-green">None</span></td>
+                        <td><span class="badge badge-green">Git</span></td>
                     </tr>
                     <tr>
                         <td><strong>Auto-detection</strong></td>
                         <td><span class="badge badge-yellow">No</span></td>
                         <td><span class="badge badge-yellow">No</span></td>
+                        <td><span class="badge badge-green">Yes</span></td>
                         <td><span class="badge badge-green">Yes</span></td>
                     </tr>
                     <tr>
@@ -285,6 +306,7 @@
                         <td>Simple deployments</td>
                         <td>High-performance apps</td>
                         <td>Development/testing</td>
+                        <td>Git-based deploys</td>
                     </tr>
                 </tbody>
             </table>

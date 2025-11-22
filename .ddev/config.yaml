@@ -8,6 +8,7 @@ additional_hostnames:
   - option1
   - option2
   - option3
+  - option4
 hooks:
   pre-start:
     - exec-host: brew services stop httpd

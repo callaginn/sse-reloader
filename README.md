@@ -1,5 +1,5 @@
 # SSE Update System 🚀
-Three ways to blast real-time updates into your app without melting your server (probably). 🙈
+Four ways to blast real-time updates into your app without melting your server (probably). 🙈
 
 Unlike JS-PHP polling — which pokes your server every half second like a toddler on espresso 🤣 — SSE keeps one chill connection and only sends updates when something actually changes. Less bandwidth, lighter server load, faster updates, and zero nagging “Are we there yet?” messages. 😎
 
@@ -29,6 +29,16 @@ Your very own file detective. It keeps an in-memory snapshot of multiple directo
 - Multi-directory monitoring
 - Provides detailed change insights (a little nosy, in a good way)
 
+### 4. Git-Based Trigger 🔀
+
+The repo whisperer. It watches your HEAD like a hawk and shouts “Update!” whenever you commit, pull, merge, or checkout. No polling, no extra files, just pure version-control magic. Great for pipelines and anyone who lives in `git status`.
+
+- Fires only on real code changes (no false drama)
+- Plays nice with normal git workflows
+- No temp watcher files cluttering your zen
+- Deployment-friendly (CI gives it a high-five)
+- Surprisingly low-maintenance for something this nosy
+
 ## Setup
 
 1. Install DDEV (https://ddev.readthedocs.io)
@@ -44,6 +54,7 @@ Choose your adventure:<br>
 - **Option 1**: http://option1.ddev.site
 - **Option 2**: http://option2.ddev.site
 - **Option 3**: http://option3.ddev.site
+- **Option 4**: http://option4.ddev.site
 
 Fire up the watchers:
 
@@ -56,6 +67,9 @@ ddev yarn watch2
 
 # Option 3
 ddev yarn watch3
+
+# Option 4 (no watcher needed!)
+git commit --allow-empty -m "test update"
 ```
 
 ## DDEV Troubleshooting
